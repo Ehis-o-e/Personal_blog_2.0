@@ -124,7 +124,6 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Login successful!');
                     window.location.href = '/admin';
                 } else {
                     errorMessage.style.display = 'block';
