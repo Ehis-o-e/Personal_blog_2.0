@@ -113,7 +113,10 @@
                     const postDiv = document.createElement('div');
                     postDiv.style.marginBottom = '15px';
                     postDiv.style.cursor = 'pointer';
-                    
+
+                    postDiv.onclick = () => {
+                        window.location.href = `/post?id=${post.id}`;
+                    };
                     // Only show title and date
                     postDiv.innerHTML = `
                         <h3>
@@ -129,6 +132,7 @@
                         <hr>
                     `;
                     
+                    
                     postsList.appendChild(postDiv);
                 });
             } catch (error) {
@@ -140,4 +144,4 @@
         loadPosts();
     </script> 
 </body>
-</html>
+</html> 
