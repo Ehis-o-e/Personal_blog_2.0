@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post - Travesia</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <h1><a href="/" style="text-decoration: none; color: white;">Travesia</a></h1>
+        <button onclick="location.href='/admin'">Back to Dashboard</button>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1 id="formTitle">Create New Post</h1>
+        <p>Share your thoughts and insights with the world.</p>
+    </div>
+
+    <!-- Form Container -->
+    <div id="postsContainer" style="max-width: 800px;">
+        <form id="postForm">
+            <div>
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+
+            <div>
+                <label for="content">Content:</label>
+                <textarea id="content" name="content" rows="10" required></textarea>
+            </div>
+
+            <button type="submit" id="submitPostBtn">Publish Post</button>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Travesia. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('id');
+        let isEditMode = false;
+
+        // If editing, load post data
+        if (postId) {
+            isEditMode = true;
+            document.getElementById('formTitle').textContent = 'Edit Post';
+            loadPostData(postId);
+        }
+
+        // Load post data for editing
+        async function loadPostData(id) {
+            try {
+                const response = await fetch(`/api/posts/${id}`);
+                const post = await response.json();
+                document.getElementById('title').value = post.title;
+                document.getElementById('content').value = post.content;
+            } catch (error) {
+                console.error('Error loading post:', error);
+                alert('Error loading post data');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            try {
+                let response;
+
+                if (isEditMode) {
+                    response = await fetch(`/api/posts/${postId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, content })
+                    });
+                } else {
+                    response = await fetch('/api/posts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, content })
+                    });
+                }
+
+                if (response.ok) {
+                    alert(isEditMode ? 'Post updated successfully!' : 'Post created successfully!');
+                    location.href = '/admin';
+                } else {
+                    alert('Failed to save post');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving post');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travesia</title>
+    <link rel="stylesheet" href="./style.css">  
+</head>
+<body>
+    <nav>
+        <h1><a href="/">Travesia</a></h1>
+        <button id="signInBtn">Sign in</button>
+    </nav>
+    
+    <div class="hero">
+        <h1>Welcome to my blog</h1>
+        <p>Your personal blog platform.</p>
+    </div>
+    
+    <div id="postsContainer">
+        <h2>Latest Posts</h2>
+        <div id="postsList"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Travesia. All rights reserved.</p>
+    </footer>
+
+    <div id="loginModal" style="display: none;">
+        <div>
+            <span class="close">&times;</span>
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <div>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+                <p id="errorMessage" style="display: none;">Wrong credentials</p>
+            </form>
+        </div>
+    </div>
+
+    <script >
+         // Modal elements
+        const modal = document.getElementById('loginModal');
+        const signInBtn = document.getElementById('signInBtn');
+        const closeBtn = document.querySelector('.close');
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Open modal
+        signInBtn.onclick = function() {
+            modal.style.display = 'block';
+            errorMessage.style.display = 'none';
+            loginForm.reset();
+        }
+
+        // Close modal
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        // Handle login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/admin';
+                } else {
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        });
+
+        // Load and display all posts (TITLE AND DATE ONLY)
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/posts');
+                const posts = await response.json();
+                
+                const postsList = document.getElementById('postsList');
+                postsList.innerHTML = '';
+                
+                if (posts.length === 0) {
+                    postsList.innerHTML = '<p>No posts yet. Sign in to create one!</p>';
+                    return;
+                }
+                
+                posts.forEach(post => {
+                    const postDiv = document.createElement('div');
+                    postDiv.style.marginBottom = '15px';
+                    postDiv.style.cursor = 'pointer';
+                    
+                    // Only show title and date
+                    postDiv.innerHTML = `
+                        <h3>
+                            <a href="/post?id=${post.id}" style="text-decoration: none; color: inherit;">
+                                ${post.title}
+                            </a>
+                        </h3>
+                        <small>${new Date(post.createdAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        })}</small>
+                        <hr>
+                    `;
+                    
+                    postsList.appendChild(postDiv);
+                });
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                document.getElementById('postsList').innerHTML = '<p>Error loading posts</p>';
+            }
+        }
+
+        loadPosts();
+    </script> 
+</body>
+</html>
